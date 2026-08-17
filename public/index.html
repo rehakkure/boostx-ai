@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <meta name="theme-color" content="#080808" />
+  <title>BoostX.AI</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --surface-2: #171717;
+      --surface-3: #0d0d0d;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #f5f5f5;
+      --text-soft: #d2d2d2;
+      --muted: #858585;
+      --accent: #ffffff;
+      --accent-text: #050505;
+      --danger: #ff7777;
+      --success: #7de09b;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 15px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -15%, rgba(255,255,255,0.07), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(24px, env(safe-area-inset-bottom));
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 2px 20px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .brand-name {
+      font-size: 23px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.045em;
+    }
+
+    .brand-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .status-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #6f6f6f;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 16px rgba(125, 224, 155, 0.35);
+    }
+
+    .card {
+      background: rgba(17, 17, 17, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.26);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .composer,
+    .preview-card {
+      padding: 17px;
+    }
+
+    .section {
+      margin-bottom: 21px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      color: var(--text-soft);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .counter {
+      color: #666666;
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .textarea-wrap {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 142px;
+      max-height: 300px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 15px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    textarea::placeholder {
+      color: #666666;
+    }
+
+    textarea:focus {
+      border-color: var(--border-strong);
+      background: #191919;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.025);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .option {
+      min-height: 45px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: #c8c8c8;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .option:hover {
+      border-color: var(--border-strong);
+    }
+
+    .option:active {
+      transform: scale(0.98);
+    }
+
+    .option.active {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    .generate-btn {
+      width: 100%;
+      min-height: 55px;
+      margin-top: 2px;
+      padding: 0 20px;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #050505;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 850;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .generate-btn:hover {
+      opacity: 0.94;
+    }
+
+    .generate-btn:active {
+      transform: translateY(1px);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.46;
+      cursor: not-allowed;
+    }
+
+    .button-content {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.18);
+      border-top-color: #000000;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .loading .spinner {
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .secondary-btn {
+      min-height: 43px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: #cfcfcf;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 750;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      border-color: var(--border-strong);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .secondary-btn:disabled {
+      opacity: 0.28;
+      cursor: not-allowed;
+    }
+
+    .preview-card {
+      margin-top: 14px;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .preview-title {
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .preview-meta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .preview-count {
+      flex: 0 0 auto;
+      color: #6a6a6a;
+      font-size: 9px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .preview-model {
+      max-width: 180px;
+      color: #5f5f5f;
+      font-size: 9px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .preview-content {
+      min-height: 165px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-3);
+      color: #e9e9e9;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .empty-state {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 165px;
+      padding: 16px;
+      text-align: center;
+      color: #5d5d5d;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .message {
+      display: none;
+      margin-top: 10px;
+      padding: 12px 13px;
+      border-radius: 13px;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.error {
+      background: rgba(255, 119, 119, 0.08);
+      border: 1px solid rgba(255, 119, 119, 0.15);
+      color: #ff9a9a;
+    }
+
+    .footer {
+      padding: 16px 4px 4px;
+      text-align: center;
+      color: #4e4e4e;
+      font-size: 10px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      transform: translate(-50%, 14px);
+      max-width: calc(100vw - 32px);
+      padding: 11px 14px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      background: rgba(22,22,22,0.94);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+      color: #f1f1f1;
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 20;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 390px) {
+      body {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .composer,
+      .preview-card {
+        padding: 14px;
+      }
+
+      .option,
+      .secondary-btn {
+        font-size: 10px;
+      }
+
+      textarea {
+        min-height: 132px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-name">BoostX.AI</div>
+        <div class="brand-subtitle">Turn raw thoughts into publish-ready posts.</div>
+      </div>
+
+      <div class="status-wrap" aria-label="Connected">
+        <span class="status-dot"></span>
+        <span>Connected</span>
+      </div>
+    </header>
+
+    <section class="card composer">
+      <div class="section">
+        <div class="label-row">
+          <label class="label" for="topic">Raw Thoughts / Topic</label>
+          <span class="counter" id="counter">0 / 1000</span>
+        </div>
+
+        <textarea
+          id="topic"
+          maxlength="1000"
+          placeholder="Example: Write a post about cats..."
+          autocomplete="off"
+          spellcheck="true"
+        ></textarea>
+      </div>
+
+      <div class="section">
+        <div class="label-row"><span class="label">Platform</span></div>
+        <div class="control-grid" id="platformOptions">
+          <button class="option active" type="button" data-value="X / Twitter">X / Twitter</button>
+          <button class="option" type="button" data-value="LinkedIn">LinkedIn</button>
+          <button class="option" type="button" data-value="Telegram">Telegram</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="label-row"><span class="label">Tone</span></div>
+        <div class="control-grid" id="toneOptions">
+          <button class="option active" type="button" data-value="Viral">Viral</button>
+          <button class="option" type="button" data-value="Professional">Professional</button>
+          <button class="option" type="button" data-value="Casual">Casual</button>
+        </div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn" type="button">
+        <span class="button-content">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="button-label">Generate Post 🚀</span>
+        </span>
+      </button>
+
+      <div class="action-row">
+        <button class="secondary-btn" id="regenerateBtn" type="button" disabled>Regenerate</button>
+        <button class="secondary-btn" id="improveBtn" type="button" disabled>Improve</button>
+        <button class="secondary-btn" id="clearBtn" type="button">Clear</button>
+      </div>
+
+      <div class="message" id="message" role="alert"></div>
+    </section>
+
+    <section class="card preview-card">
+      <div class="preview-header">
+        <div class="preview-title">Generated Preview</div>
+        <div class="preview-meta">
+          <span class="preview-count" id="previewCount">0 chars</span>
+          <span class="preview-model" id="previewModel"></span>
+        </div>
+      </div>
+
+      <div class="preview-content" id="previewContent">
+        <div class="empty-state">Your generated post will appear here.</div>
+      </div>
+
+      <button class="secondary-btn" id="copyBtn" type="button" disabled style="width:100%; margin-top:10px;">Copy Post</button>
+    </section>
+
+    <footer class="footer">BoostX.AI · Private beta · Free while testing</footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const tg = window.Telegram?.WebApp;
+
+      const topicInput = document.getElementById("topic");
+      const counter = document.getElementById("counter");
+      const generateBtn = document.getElementById("generateBtn");
+      const regenerateBtn = document.getElementById("regenerateBtn");
+      const improveBtn = document.getElementById("improveBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const message = document.getElementById("message");
+      const previewContent = document.getElementById("previewContent");
+      const previewModel = document.getElementById("previewModel");
+      const previewCount = document.getElementById("previewCount");
+      const toast = document.getElementById("toast");
+
+      let selectedPlatform = "X / Twitter";
+      let selectedTone = "Viral";
+      let generatedPost = "";
+      let isGenerating = false;
+      let toastTimer = null;
+
+      function showMessage(text) {
+        message.textContent = text;
+        message.className = "message show error";
+      }
+
+      function hideMessage() {
+        message.textContent = "";
+        message.className = "message";
+      }
+
+      function showToast(text) {
+        clearTimeout(toastTimer);
+        toast.textContent = text;
+        toast.classList.add("show");
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 1700);
+      }
+
+      function haptic(type) {
+        if (!tg?.HapticFeedback) return;
+        try {
+          tg.HapticFeedback.notificationOccurred(type);
+        } catch {}
+      }
+
+      function updateCounter() {
+        counter.textContent = `${topicInput.value.length} / 1000`;
+      }
+
+      function setGenerating(loading, label = "Generate Post 🚀") {
+        isGenerating = loading;
+        generateBtn.disabled = loading;
+        regenerateBtn.disabled = loading || !generatedPost;
+        improveBtn.disabled = loading || !generatedPost;
+        copyBtn.disabled = loading || !generatedPost;
+        clearBtn.disabled = loading;
+        generateBtn.classList.toggle("loading", loading);
+        generateBtn.querySelector(".button-label").textContent = label;
+      }
+
+      function setPreview(post, model) {
+        generatedPost = post || "";
+        previewContent.textContent = generatedPost;
+        previewModel.textContent = model || "";
+        previewCount.textContent = `${Array.from(generatedPost).length} chars`;
+        regenerateBtn.disabled = isGenerating || !generatedPost;
+        improveBtn.disabled = isGenerating || !generatedPost;
+        copyBtn.disabled = isGenerating || !generatedPost;
+      }
+
+      function resetPreview() {
+        generatedPost = "";
+        previewModel.textContent = "";
+        previewCount.textContent = "0 chars";
+        previewContent.innerHTML = `<div class="empty-state">Your generated post will appear here.</div>`;
+        regenerateBtn.disabled = true;
+        improveBtn.disabled = true;
+        copyBtn.disabled = true;
+      }
+
+      function selectOption(containerId, value, setter) {
+        const container = document.getElementById(containerId);
+        container.querySelectorAll(".option").forEach((button) => {
+          button.classList.toggle("active", button.dataset.value === value);
+        });
+        setter(value);
+      }
+
+      async function requestPost(action) {
+        hideMessage();
+
+        const topic = topicInput.value.trim();
+
+        if (!topic) {
+          showMessage("Please enter a topic before generating a post.");
+          topicInput.focus();
+          return;
+        }
+
+        if (!tg?.initData) {
+          showMessage("Telegram authentication is unavailable. Please reopen BoostX.AI from Telegram.");
+          return;
+        }
+
+        if (action === "improve" && !generatedPost) {
+          showMessage("There is no generated post to improve yet.");
+          return;
+        }
+
+        if (action === "regenerate" && !generatedPost) {
+          showMessage("Generate a post first, then use Regenerate.");
+          return;
+        }
+
+        const buttonLabel =
+          action === "improve" ? "Improving..." :
+          action === "regenerate" ? "Regenerating..." :
+          "Generating...";
+
+        const previousPost = generatedPost;
+        const currentPost = generatedPost;
+
+        setGenerating(true, buttonLabel);
+
+        try {
+          const response = await fetch("/api/generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Telegram-Init-Data": tg.initData
+            },
+            body: JSON.stringify({
+              action,
+              topic,
+              platform: selectedPlatform,
+              tone: selectedTone,
+              previousPost,
+              currentPost
+            })
+          });
+
+          let data = null;
+
+          try {
+            data = await response.json();
+          } catch {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error(data?.error || "The AI request could not be completed. Please try again.");
+          }
+
+          if (!data?.post) {
+            throw new Error("The AI returned an empty response. Please try again.");
+          }
+
+          setPreview(data.post, data.model);
+
+          if (action === "generate") {
+            showToast("Post generated");
+          } else if (action === "regenerate") {
+            showToast("New version generated");
+          } else {
+            showToast("Post improved");
+          }
+
+          if (Number.isInteger(data?.remaining) && data.remaining <= 3) {
+            setTimeout(() => showToast(`${data.remaining} beta uses left today`), 500);
+          }
+
+          haptic("success");
+
+          previewContent.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+          });
+        } catch (error) {
+          console.error("BoostX.AI request error:", error);
+          showMessage(error.message || "Something went wrong. Please try again.");
+          haptic("error");
+        } finally {
+          setGenerating(false, "Generate Post 🚀");
+        }
+      }
+
+      async function copyPost() {
+        if (!generatedPost) return;
+
+        try {
+          await navigator.clipboard.writeText(generatedPost);
+          showToast("Post copied");
+          haptic("success");
+        } catch {
+          showMessage("Copy is not available on this device. Please copy the post manually.");
+        }
+      }
+
+      function clearAll() {
+        if (isGenerating) return;
+        topicInput.value = "";
+        updateCounter();
+        resetPreview();
+        hideMessage();
+        topicInput.focus();
+      }
+
+      topicInput.addEventListener("input", updateCounter);
+
+      document.getElementById("platformOptions").addEventListener("click", (event) => {
+        const button = event.target.closest(".option");
+        if (!button) return;
+        selectOption("platformOptions", button.dataset.value, (value) => {
+          selectedPlatform = value;
+        });
+      });
+
+      document.getElementById("toneOptions").addEventListener("click", (event) => {
+        const button = event.target.closest(".option");
+        if (!button) return;
+        selectOption("toneOptions", button.dataset.value, (value) => {
+          selectedTone = value;
+        });
+      });
+
+      generateBtn.addEventListener("click", () => requestPost("generate"));
+      regenerateBtn.addEventListener("click", () => requestPost("regenerate"));
+      improveBtn.addEventListener("click", () => requestPost("improve"));
+      clearBtn.addEventListener("click", clearAll);
+      copyBtn.addEventListener("click", copyPost);
+
+      topicInput.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          requestPost("generate");
+        }
+      });
+
+      if (tg) {
+        tg.ready();
+        tg.expand();
+
+        if (tg.setHeaderColor) tg.setHeaderColor("#080808");
+        if (tg.setBackgroundColor) tg.setBackgroundColor("#080808");
+      } else {
+        showMessage("BoostX.AI must be opened inside Telegram.");
+        generateBtn.disabled = true;
+      }
+
+      updateCounter();
+      resetPreview();
+    })();
+  </script>
+</body>
+</html>
